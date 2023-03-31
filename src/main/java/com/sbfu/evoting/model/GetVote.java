@@ -1,9 +1,11 @@
 package com.sbfu.evoting.model;
 
+import java.util.List;
+
 public class GetVote {
 	
-	public Integer voterId;
+	public Integer totalVotes;
 	
-	public Integer votingCount;
+	public List<IndividualVote> votes;
 
 }

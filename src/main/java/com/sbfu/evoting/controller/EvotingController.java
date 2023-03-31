@@ -51,7 +51,7 @@ public class EvotingController {
 	}
 	
 	@GetMapping("fetchTotalVotes")
-	public List<GetVote> getCummulativeVote() {
+	public GetVote getCummulativeVote() {
 		return service.getCummulativeVote();
 	}
 	

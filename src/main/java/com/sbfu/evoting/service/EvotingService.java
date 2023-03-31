@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.sbfu.evoting.entity.Voter;
 import com.sbfu.evoting.model.GetVote;
+import com.sbfu.evoting.model.IndividualVote;
 import com.sbfu.evoting.model.Query;
 import com.sbfu.evoting.model.SignIn;
 import com.sbfu.evoting.model.Signup;
@@ -62,20 +63,29 @@ public class EvotingService {
 
 	}
 
-	public List<GetVote> getCummulativeVote() {
+	public GetVote getCummulativeVote() {
 		List<Voter> findTotalVotes = repository.findAll();
-		List<GetVote> totalvotes = new LinkedList<>();
+		GetVote response = new GetVote();
+		List<IndividualVote> totalvotes = new LinkedList<>();
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 		findTotalVotes.stream().forEach((vote) -> {
 			map.put(vote.voterId, (int) map.getOrDefault(vote.voterId, 0) + 1);
 		});
+		Integer totalCount = 0;
 		for (var entry : map.entrySet()) {
-			GetVote vote = new GetVote();
+			IndividualVote vote = new IndividualVote();
 			vote.voterId = entry.getKey();
 			vote.votingCount = entry.getValue();
 			totalvotes.add(vote);
+			if(entry.getKey() != null) {
+				totalCount+=entry.getValue();
+			}
 		}
-		return totalvotes;
+		
+		response.totalVotes = totalCount;
+		response.votes = totalvotes;
+		
+		return response;
 	}
 
 	public ResponseEntity<String> setQueryMsg(Query query) {
