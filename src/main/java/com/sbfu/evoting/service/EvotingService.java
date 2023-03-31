@@ -31,13 +31,14 @@ public class EvotingService {
 	public ResponseEntity<String> doSignUp(Signup signupRequest) {
 		List<Voter> findByUserId = repository.findByUserId(signupRequest.userId);
 		if (findByUserId.size() > 0) {
-			return ResponseEntity.status(500).body("The userId is already registered");
+			return ResponseEntity.status(503).body("The userId is already registered");
 		}
 		Voter voter = helper.mapRequestToEntity(signupRequest);
 
 		try {
 			repository.save(voter);
-			return ResponseEntity.ok("Successfully signed up");
+			UUID token = java.util.UUID.randomUUID();
+			return ResponseEntity.ok(token.toString());
 
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body("Internal server error");
