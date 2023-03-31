@@ -124,7 +124,12 @@ public class EvotingService {
 				return ResponseEntity.status(404).body("The user is not present");
 			}
 			Voter currentUser = findByUserId.get(0);
-			return ResponseEntity.ok(currentUser.voterId.toString());
+			if(currentUser.voterId != null) {
+				return ResponseEntity.ok(currentUser.voterId.toString());
+			}else {
+				return ResponseEntity.ok(null);
+			}
+			
 
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body("Internal server error");
