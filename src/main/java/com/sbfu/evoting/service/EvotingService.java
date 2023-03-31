@@ -127,7 +127,7 @@ public class EvotingService {
 			if(currentUser.voterId != null) {
 				return ResponseEntity.ok(currentUser.voterId.toString());
 			}else {
-				return ResponseEntity.ok(null);
+				return ResponseEntity.status(503).body(null);
 			}
 			
 
