@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,8 @@ public class EvotingService {
 			if (findByUserId.size() != 1) {
 				return ResponseEntity.status(401).body("Invalid Credentials");
 			}
-			return ResponseEntity.ok("Successfully signed in");
+			UUID token = java.util.UUID.randomUUID();
+			return ResponseEntity.ok(token.toString());
 
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body("Internal server error");
