@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import com.sbfu.evoting.entity.Voter;
 import com.sbfu.evoting.model.GetVote;
 import com.sbfu.evoting.model.IndividualVote;
 import com.sbfu.evoting.model.Query;
+import com.sbfu.evoting.model.ResetPassword;
 import com.sbfu.evoting.model.SignIn;
 import com.sbfu.evoting.model.Signup;
 import com.sbfu.evoting.model.Vote;
@@ -28,6 +31,12 @@ public class EvotingService {
 
 	@Autowired
 	EvotingHelper helper;
+
+	@Autowired
+	MailService mailService;
+
+	@Value("${sending.mailer.username}")
+	private String mailUsername;
 
 	public ResponseEntity<String> doSignUp(Signup signupRequest) {
 		List<Voter> findByUserId = repository.findByUserId(signupRequest.userId);
@@ -77,14 +86,14 @@ public class EvotingService {
 			vote.voterId = entry.getKey();
 			vote.votingCount = entry.getValue();
 			totalvotes.add(vote);
-			if(entry.getKey() != null) {
-				totalCount+=entry.getValue();
+			if (entry.getKey() != null) {
+				totalCount += entry.getValue();
 			}
 		}
-		
+
 		response.totalVotes = totalCount;
 		response.votes = totalvotes;
-		
+
 		return response;
 	}
 
@@ -95,9 +104,15 @@ public class EvotingService {
 				return ResponseEntity.status(404).body("The user is not present");
 			}
 			Voter currentUser = findByUserId.get(0);
-			currentUser.queryName=query.myName;
+			currentUser.queryName = query.myName;
 			currentUser.queryMsg = query.msg;
 			repository.save(currentUser);
+			mailService.sendMail(mailUsername, currentUser.email, "Query successfully sent.",
+					"The query: " + query.msg + " is successfully sent. The organiser will soon resolve your query.");
+			mailService.sendMail(mailUsername, mailUsername, "A query is sent by " + query.myName,
+					"Query : " + query.msg + " .Please respond to the mail " + currentUser.email + " .From userID: "
+							+ currentUser.userId);
+
 			return ResponseEntity.ok("Successfully saved the query");
 
 		} catch (Exception e) {
@@ -116,9 +131,11 @@ public class EvotingService {
 			if (currentUser.voterId != null) {
 				return ResponseEntity.status(500).body("The user has already cast the vote");
 			}
-			
+
 			currentUser.voterId = vote.voterId;
 			repository.save(currentUser);
+			mailService.sendMail(mailUsername, currentUser.email, "Cast Vote || Student Id :"+currentUser.userId,
+					"You have successfully cast your vote. Please login again to confirm your selection.");
 			return ResponseEntity.ok("Successfully saved your choice. Thank you.");
 
 		} catch (Exception e) {
@@ -134,12 +151,62 @@ public class EvotingService {
 				return ResponseEntity.status(404).body("The user is not present");
 			}
 			Voter currentUser = findByUserId.get(0);
-			if(currentUser.voterId != null) {
+			if (currentUser.voterId != null) {
 				return ResponseEntity.ok(currentUser.voterId.toString());
-			}else {
+			} else {
 				return ResponseEntity.status(503).body(null);
 			}
-			
+
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body("Internal server error");
+		}
+
+	}
+
+	public ResponseEntity<String> generateOTP(String userId) {
+		try {
+			List<Voter> findByUserId = repository.findByUserId(userId);
+			if (findByUserId.size() != 1) {
+				return ResponseEntity.status(404).body("The user is not present");
+			}
+			Voter currentUser = findByUserId.get(0);
+			if (currentUser.voterId != null) {
+				Random r = new Random(System.currentTimeMillis());
+				int otp = ((1 + r.nextInt(2)) * 10000 + r.nextInt(10000));
+				currentUser.otp = otp;
+				repository.save(currentUser);
+				mailService.sendMail(mailUsername, currentUser.email, "OTP verfication || Student Id :"+currentUser.userId,
+						"The OTP for the reset password : "+currentUser.otp);
+				return ResponseEntity.ok("OTP sent successfully. Please check your registered email for OTP.");
+			} else {
+				return ResponseEntity.status(503).body(null);
+			}
+
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body("Internal server error");
+		}
+
+	}
+
+	public ResponseEntity<String> resetOTP(ResetPassword resetPasswordRequest) {
+		try {
+			List<Voter> findByUserId = repository.findByUserId(resetPasswordRequest.userId);
+			if (findByUserId.size() != 1) {
+				return ResponseEntity.status(404).body("The user is not present");
+			}
+			Voter currentUser = findByUserId.get(0);
+			if (currentUser.voterId != null) {
+				if (currentUser.otp != Integer.parseInt(resetPasswordRequest.otp)) {
+					return ResponseEntity.ok("Invalid OTP. Please check your mail to get the correct OTP.");
+				}
+				currentUser.password = resetPasswordRequest.password;
+				repository.save(currentUser);
+				mailService.sendMail(mailUsername, currentUser.email, "Password reset successfully || Student Id: "+currentUser.userId,
+						"The password is successfully updated.");
+				return ResponseEntity.ok("Password reset successfully");
+			} else {
+				return ResponseEntity.status(503).body(null);
+			}
 
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body("Internal server error");

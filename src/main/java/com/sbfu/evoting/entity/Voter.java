@@ -34,4 +34,7 @@ public class Voter {
     
     @Column(name="queryMsg")
     public String queryMsg;
+    
+    @Column(name = "otp")
+    public int otp;
 }

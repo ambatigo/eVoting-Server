@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbfu.evoting.model.GetVote;
 import com.sbfu.evoting.model.Query;
+import com.sbfu.evoting.model.ResetPassword;
 import com.sbfu.evoting.model.SignIn;
 import com.sbfu.evoting.model.Signup;
 import com.sbfu.evoting.model.Vote;
@@ -53,6 +54,16 @@ public class EvotingController {
 	@GetMapping("fetchTotalVotes")
 	public GetVote getCummulativeVote() {
 		return service.getCummulativeVote();
+	}
+	
+	@PostMapping("generate-otp/{userId}")
+	public ResponseEntity<String> generateOTP(@PathVariable("userId") String userId){
+		return service.generateOTP(userId);
+	}
+	
+	@PostMapping("reset-otp")
+	public ResponseEntity<String> resetOTP(@RequestBody ResetPassword resetPasswordRequest){
+		return service.resetOTP(resetPasswordRequest);
 	}
 	
 
