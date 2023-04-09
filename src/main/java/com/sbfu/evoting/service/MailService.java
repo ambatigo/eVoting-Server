@@ -9,6 +9,7 @@ import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
@@ -21,7 +22,7 @@ public class MailService {
 	@Value("${sending.mailer.password}")
 	private String mailPassword;
 
-	public boolean sendMail(String from, String to, String body, String subject) {
+	public boolean sendMail(String from, String to, String subject, String body) {
 		boolean flag = false;
 
 		Properties properties = new Properties();
@@ -44,6 +45,7 @@ public class MailService {
 			message.setFrom(new InternetAddress(from));
 			message.setSubject(subject);
 			message.setText(body);
+			Transport.send(message);
 			flag=true;
 			
 		}catch(Exception e) {

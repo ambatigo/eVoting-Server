@@ -35,8 +35,8 @@ public class EvotingService {
 	@Autowired
 	MailService mailService;
 
-	@Value("${sending.mailer.username}")
-	private String mailUsername;
+	@Value("${sending.mailer.email}")
+	private String mailerEmail;
 
 	public ResponseEntity<String> doSignUp(Signup signupRequest) {
 		List<Voter> findByUserId = repository.findByUserId(signupRequest.userId);
@@ -107,9 +107,9 @@ public class EvotingService {
 			currentUser.queryName = query.myName;
 			currentUser.queryMsg = query.msg;
 			repository.save(currentUser);
-			mailService.sendMail(mailUsername, currentUser.email, "Query successfully sent.",
+			mailService.sendMail(mailerEmail, currentUser.email, "Query successfully sent.",
 					"The query: " + query.msg + " is successfully sent. The organiser will soon resolve your query.");
-			mailService.sendMail(mailUsername, mailUsername, "A query is sent by " + query.myName,
+			mailService.sendMail(mailerEmail, mailerEmail, "A query is sent by " + query.myName,
 					"Query : " + query.msg + " .Please respond to the mail " + currentUser.email + " .From userID: "
 							+ currentUser.userId);
 
@@ -134,7 +134,7 @@ public class EvotingService {
 
 			currentUser.voterId = vote.voterId;
 			repository.save(currentUser);
-			mailService.sendMail(mailUsername, currentUser.email, "Cast Vote || Student Id :"+currentUser.userId,
+			mailService.sendMail(mailerEmail, currentUser.email, "Cast Vote || Student Id :"+currentUser.userId,
 					"You have successfully cast your vote. Please login again to confirm your selection.");
 			return ResponseEntity.ok("Successfully saved your choice. Thank you.");
 
@@ -175,7 +175,7 @@ public class EvotingService {
 				int otp = ((1 + r.nextInt(2)) * 10000 + r.nextInt(10000));
 				currentUser.otp = otp;
 				repository.save(currentUser);
-				mailService.sendMail(mailUsername, currentUser.email, "OTP verfication || Student Id :"+currentUser.userId,
+				mailService.sendMail(mailerEmail, currentUser.email, "OTP verfication || Student Id :"+currentUser.userId,
 						"The OTP for the reset password : "+currentUser.otp);
 				return ResponseEntity.ok("OTP sent successfully. Please check your registered email for OTP.");
 			} else {
@@ -201,7 +201,7 @@ public class EvotingService {
 				}
 				currentUser.password = resetPasswordRequest.password;
 				repository.save(currentUser);
-				mailService.sendMail(mailUsername, currentUser.email, "Password reset successfully || Student Id: "+currentUser.userId,
+				mailService.sendMail(mailerEmail, currentUser.email, "Password reset successfully || Student Id: "+currentUser.userId,
 						"The password is successfully updated.");
 				return ResponseEntity.ok("Password reset successfully");
 			} else {
