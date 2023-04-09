@@ -36,5 +36,5 @@ public class Voter {
     public String queryMsg;
     
     @Column(name = "otp")
-    public int otp;
+    public Integer otp;
 }
